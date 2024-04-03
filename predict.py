@@ -14,8 +14,8 @@ async def convert_image(image) -> np.ndarray:
     return result
 
 async def predict(image : UploadFile, model_version : str) -> Tuple[str,float]:
-    species_list_path = './models/'+model_version+'/species.json'
-    model_path = './models/'+model_version+'/SavedModel.h5'
+    species_list_path = './../models/'+model_version+'/species.json'
+    model_path = './../models/'+model_version+'/SavedModel.h5'
 
     try:
         model = tf.keras.models.load_model(model_path)
@@ -27,8 +27,17 @@ async def predict(image : UploadFile, model_version : str) -> Tuple[str,float]:
         species = json.load(f)
 
     predictions = model.predict(img[None,:,:])
-    result = species[np.argmax(predictions[0])]
-    confidence = np.max(predictions[0]) * 100
+    sorted = np.argsort(predictions[0])
+    result = [
+                species[sorted[-1]],
+                species[sorted[-2]],
+                species[sorted[-3]],
+    ]
+    confidence = [
+                predictions[0][sorted[-1]] * 100,
+                predictions[0][sorted[-2]] * 100,
+                predictions[0][sorted[-3]] * 100,
+    ]
 
     return result,confidence
 

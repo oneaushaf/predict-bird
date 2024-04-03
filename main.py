@@ -1,6 +1,7 @@
 from fastapi import FastAPI, File, UploadFile,Form
 import numpy as np
 import predict
+import train
 from io import BytesIO
 from PIL import Image
 
@@ -20,3 +21,11 @@ async def predict_image(
         "confidence":confidence
     }
 
+@app.post("/train/new")
+async def train_new_species(
+    layers: int
+):
+    result = await train.train_new(64)
+    return {
+        "report":result,
+    }
