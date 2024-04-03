@@ -1,3 +1,4 @@
+import json
 from tensorflow.keras.models import load_model,Model
 from tensorflow.keras import Sequential
 from tensorflow.data import Dataset
@@ -35,13 +36,10 @@ async def train_new(layers : int = 64):
                                                 shuffle=True,
                                                 target_size=IMG_SIZE)
 
-    val_data = val_datagen.flow_from_directory(train_dir, shuffle=False,
-                                                target_size=IMG_SIZE)
-
-    test_data = test_datagen.flow_from_directory(train_dir, shuffle=False,
+    val_data = val_datagen.flow_from_directory(val_dir, shuffle=False,
                                                 target_size=IMG_SIZE)
     
-    classes = test_data.class_indices.keys()
+    classes = val_data.class_indices.keys()
     
     base_model = load_model(model_path+'/base/SavedModel.h5')
     base_model.trainable = False
@@ -69,6 +67,8 @@ async def train_new(layers : int = 64):
     result = {}
 
     model.save(model_path+'/temp/SavedModel.h5')
+    with open('/temp/species.json', 'w') as json_file:
+        json.dump(classes, json_file)
 
     result['best_val_accuracy'] = max(history.history['val_accuracy'])
     result['best_val_loss'] = min(history.history['val_loss'])
