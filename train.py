@@ -1,10 +1,9 @@
 import json
-from tensorflow.keras.models import load_model,Model
-from tensorflow.keras import Sequential
-from tensorflow.data import Dataset
-from tensorflow.keras.layers import Dense, Flatten
-from tensorflow.keras.callbacks import EarlyStopping 
-from keras.preprocessing.image import ImageDataGenerator,DirectoryIterator
+from tensorflow.keras.models import load_model  # type: ignore
+from tensorflow.keras import Sequential # type: ignore
+from tensorflow.keras.layers import Dense, Flatten # type: ignore
+from tensorflow.keras.callbacks import EarlyStopping # type: ignore
+from keras.preprocessing.image import ImageDataGenerator
 
 async def train_new(layers : int = 64):
     dataset_path = './../dataset/trained'
@@ -12,7 +11,6 @@ async def train_new(layers : int = 64):
 
     train_dir = dataset_path + '/train'
     val_dir = dataset_path + '/validation'
-    test_dir = dataset_path + '/test'
 
     train_datagen = ImageDataGenerator(
         horizontal_flip=True,
@@ -25,9 +23,6 @@ async def train_new(layers : int = 64):
         brightness_range=[0.3,0.7]
     )
     val_datagen = ImageDataGenerator(
-        rescale=1/255.,
-    )
-    test_datagen = ImageDataGenerator(
         rescale=1/255.,
     )
 
