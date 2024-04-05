@@ -4,6 +4,9 @@ from tensorflow.keras import Sequential # type: ignore
 from tensorflow.keras.layers import Dense, Flatten # type: ignore
 from tensorflow.keras.callbacks import EarlyStopping # type: ignore
 from keras.preprocessing.image import ImageDataGenerator
+import time
+
+is_training = False
 
 async def train_new(layers : int = 64):
     dataset_path = './../dataset/trained'
@@ -53,22 +56,29 @@ async def train_new(layers : int = 64):
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
     callback_acc = EarlyStopping(monitor='val_accuracy', patience=10)
+
     history = model.fit(
         train_data,
         validation_data=val_data,
         epochs=100,
         callbacks=[callback_acc])
-    
-    result = {}
 
+    global is_training
+    is_training = True
+
+    timer = round(time.time())
     model.save(model_path+'/temp/SavedModel.h5')
-    with open('/temp/species.json', 'w') as json_file:
+    with open(model_path+'/temp/species.json', 'w') as json_file:
         json.dump(classes, json_file)
+    timer = round(time.time()) - timer
 
-    result['best_val_accuracy'] = max(history.history['val_accuracy'])
-    result['best_val_loss'] = min(history.history['val_loss'])
-    result['best_accuracy'] = max(history.history['accuracy'])
-    result['best_loss'] = min(history.history['loss'])
+    result = {
+        "best_accuracy" : max(history.history['accuracy']),
+        "best_loss" : max(history.history['loss']),
+        "best_val_accuracy" : max(history.history['val_accuracy']),
+        "best_val_loss" : max(history.history['val_loss']),
+        "training_time" : timer
+    }
 
     return result
 
