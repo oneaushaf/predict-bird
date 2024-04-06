@@ -13,15 +13,15 @@ async def convert_image(image) -> np.ndarray:
     result = result / 255.0
     return result
 
-async def predict(image : UploadFile, model_version : str) -> Tuple[str,float]:
-    models_dir = './../models'
+async def predict(image : UploadFile, model_version : str) -> Tuple[list[str],list[float]]:
+    models_dir = './../models/'
     species_list_path = models_dir + model_version + '/species.json'
     model_path = models_dir + model_version + '/SavedModel.h5'
 
     try:
         model = tf.keras.models.load_model(model_path)
     except OSError as e:
-        return "Error: Failed to load the model", 0.0
+        return "Error: Failed to load the model " + model_path, 0.0
     
     img = await convert_image(image)
     with open(species_list_path,"r") as f:

@@ -10,6 +10,7 @@ async def predict_image(
     image: UploadFile = File(...),
     model_version : str = Form(...),
 ):
+
     result,confidence = await predict.predict(image, model_version)
     list = {
         result[0]:confidence[0],
