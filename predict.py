@@ -13,10 +13,10 @@ async def convert_image(image) -> np.ndarray:
     result = result / 255.0
     return result
 
-async def predict(image : UploadFile, model_version : str) -> Tuple[list[str],list[float]]:
+async def predict(image : UploadFile, version : str = "latest") -> Tuple[list[str],list[float]]:
     models_dir = './../models/'
-    species_list_path = models_dir + model_version + '/species.json'
-    model_path = models_dir + model_version + '/SavedModel.h5'
+    species_list_path = models_dir + version + '/species.json'
+    model_path = models_dir + version + '/SavedModel.h5'
 
     try:
         model = tf.keras.models.load_model(model_path)
