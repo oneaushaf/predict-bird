@@ -161,6 +161,8 @@ async def train_based(callback_patience : int=10,base_model : str="latest", epoc
 
         result = {
             "success" : True,
+            "message" : "data trained succesfully",
+            "error":"",
             "data":{
                 "best_accuracy" : max(history.history['accuracy']),
                 "best_loss" : max(history.history['loss']),
@@ -175,7 +177,8 @@ async def train_based(callback_patience : int=10,base_model : str="latest", epoc
         result = {
             "success" : False ,
             "message" : "failed to train",
-            "error" : str(e)
+            "error" : str(e),
+            "data":""
         }
     service.make_request("http://127.0.0.1:3000/models/train/done",result)
 

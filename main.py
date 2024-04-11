@@ -14,9 +14,12 @@ async def predict_image(
 
     result,confidence = await predict.predict(image, version)
     return {
-        result[0]:confidence[0],
-        result[1]:confidence[1],
-        result[2]:confidence[2],
+        "result": result[0],
+        "confidence":{
+            result[0]:confidence[0],
+            result[1]:confidence[1],
+            result[2]:confidence[2],
+        } 
     }
 
 class NewTrainRequest(BaseModel):
