@@ -1,10 +1,10 @@
 from fastapi import FastAPI, File, UploadFile, Form, BackgroundTasks
 from pydantic import BaseModel
+from threading import Thread
 import predict
 import train
 
 app = FastAPI()
-is_training = False
 
 @app.post("/predict/")
 async def predict_image(
@@ -36,11 +36,6 @@ async def train_new_model(
     patience = request.patience
     epochs = request.epochs
 
-    global is_training
-    if (is_training):
-        return {
-        "message":"a training is in progress, please wait until the training is done",
-    }
     background_tasks.add_task(train.train_new,layers, patience,epochs)
     return {
         "message":"training started, please wait until the training is done",
@@ -60,11 +55,6 @@ async def train_based_model(
     patience = request.patience
     epochs = request.epochs
 
-    global is_training
-    if (is_training):
-        return {
-        "message":"a training is in progress, please wait until the training is done",
-    }
     background_tasks.add_task(train.train_based,patience, base_model,epochs)
     return {
         "message":"training started, please wait until the training is done",

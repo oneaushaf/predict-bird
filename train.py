@@ -8,8 +8,6 @@ from keras.callbacks import EarlyStopping # type: ignore
 from keras.preprocessing.image import ImageDataGenerator
 import time
 
-is_training = False
-
 async def train_new(layers : int = 64, callback_patience : int =10,epochs=100):
     try:
         dataset_path = './../dataset/trained'
@@ -75,23 +73,26 @@ async def train_new(layers : int = 64, callback_patience : int =10,epochs=100):
 
         result = {
             "success" : True,
+            "base":"base",
             "data":{
                 "best_accuracy" : max(history.history['accuracy']),
                 "best_loss" : max(history.history['loss']),
                 "best_val_accuracy" : max(history.history['val_accuracy']),
                 "best_val_loss" : max(history.history['val_loss']),
                 "training_time" : timer,
-                "epochs":len(history.history['loss'])
+                "epochs":len(history.history['loss']),
+                "layers":layers,
+                "patience":callback_patience,
+                "max_epochs":epochs
             }
         }
     except Exception as e : 
-        global is_training
-        is_training = False
         result = {
             "success" : False ,
             "message" : "failed to train",
             "error" : str(e)
         }
+    is_training = False
     service.make_request("http://127.0.0.1:3000/models/train/done",result)
 
 async def train_based(callback_patience : int=10,base_model : str="latest", epochs : int = 100):
@@ -156,12 +157,9 @@ async def train_based(callback_patience : int=10,base_model : str="latest", epoc
         with open(model_path+'/temp/species.json', 'w') as json_file:
             json.dump(classes, json_file)
         timer = round(time.time()) - timer
-
-        is_training = False
-
         result = {
             "success" : True,
-            "message" : "data trained succesfully",
+            "base":base_model,
             "error":"",
             "data":{
                 "best_accuracy" : max(history.history['accuracy']),
@@ -169,17 +167,19 @@ async def train_based(callback_patience : int=10,base_model : str="latest", epoc
                 "best_val_accuracy" : max(history.history['val_accuracy']),
                 "best_val_loss" : max(history.history['val_loss']),
                 "training_time" : timer,
-                "epochs":len(history.history['loss'])
+                "epochs":len(history.history['loss']),
+                "patience" : callback_patience,
+                "max_epochs":epochs,
             }
         }
     except Exception as e : 
-        is_training = False
         result = {
             "success" : False ,
             "message" : "failed to train",
             "error" : str(e),
             "data":""
         }
+    is_training = False
     service.make_request("http://127.0.0.1:3000/models/train/done",result)
 
 
