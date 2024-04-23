@@ -7,6 +7,7 @@ from keras.layers import Dense, Flatten # type: ignore
 from keras.callbacks import EarlyStopping # type: ignore
 from keras.preprocessing.image import ImageDataGenerator
 import time
+import test
 
 async def train_new(layers : int = 64, callback_patience : int =10,epochs=100):
     try:
@@ -70,7 +71,7 @@ async def train_new(layers : int = 64, callback_patience : int =10,epochs=100):
         with open(model_path+'/temp/species.json', 'w') as json_file:
             json.dump(classes, json_file)
         timer = round(time.time()) - timer
-
+        test_result = test.test('temp')
         result = {
             "success" : True,
             "base":"base",
@@ -83,8 +84,9 @@ async def train_new(layers : int = 64, callback_patience : int =10,epochs=100):
                 "epochs":len(history.history['loss']),
                 "layers":layers,
                 "patience":callback_patience,
-                "max_epochs":epochs
-            }
+                "max_epochs":epochs,
+            },
+            "test":test_result
         }
     except Exception as e : 
         result = {
@@ -92,11 +94,9 @@ async def train_new(layers : int = 64, callback_patience : int =10,epochs=100):
             "message" : "failed to train",
             "error" : str(e)
         }
-    is_training = False
     service.make_request("http://127.0.0.1:3000/models/train/done",result)
 
-async def train_based(callback_patience : int=10,base_model : str="latest", epochs : int = 100):
-    global is_training
+async def train_based(base_model : str="latest",callback_patience : int=10, epochs : int = 100):
     try :
         dataset_path = './../dataset/trained'
         model_path = './../models'
@@ -126,21 +126,25 @@ async def train_based(callback_patience : int=10,base_model : str="latest", epoc
         val_data = val_datagen.flow_from_directory(val_dir, shuffle=False,
                                                     target_size=IMG_SIZE)
         
-        classes = list(val_data.class_indices.keys())
+        classes = list(train_data.class_indices.keys())
         
         model = load_model(model_path + '/' + base_model +'/SavedModel.h5')
+        with open(model_path + '/' + base_model +'/species.json',"r") as f:
+            species = json.load(f)
+        additional_class = len(classes) - len(species)
 
         for layer in model.layers[:-2]: 
             layer.trainable = False
 
         weights = model.layers[-1].get_weights()
         shape = weights[0].shape[0]
-        weights[1] = np.concatenate((weights[1], np.zeros(1)), axis=0)
-        weights[0] = np.concatenate((weights[0], -0.0001 * np.random.random_sample((shape, 1)) + 0.0001), axis=1)
+        for i in range(additional_class):
+            weights[1] = np.concatenate((weights[1], np.zeros(1)), axis=0)
+            weights[0] = np.concatenate((weights[0], -0.0001 * np.random.random_sample((shape, 1)) + 0.0001), axis=1)
 
         model.pop() 
-        model.add(Dense(11,activation="softmax",name="output"))
-        model.get_layer("output").set_weights(weights)
+        model.add(Dense(len(classes),activation="softmax",name="output"))
+        model.layers[-1].set_weights(weights)
 
         model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
@@ -157,6 +161,8 @@ async def train_based(callback_patience : int=10,base_model : str="latest", epoc
         with open(model_path+'/temp/species.json', 'w') as json_file:
             json.dump(classes, json_file)
         timer = round(time.time()) - timer
+        test_result = test.te
+        st('temp')
         result = {
             "success" : True,
             "base":base_model,
@@ -170,7 +176,8 @@ async def train_based(callback_patience : int=10,base_model : str="latest", epoc
                 "epochs":len(history.history['loss']),
                 "patience" : callback_patience,
                 "max_epochs":epochs,
-            }
+            },
+            "test":test_result
         }
     except Exception as e : 
         result = {
@@ -179,8 +186,9 @@ async def train_based(callback_patience : int=10,base_model : str="latest", epoc
             "error" : str(e),
             "data":""
         }
-    is_training = False
     service.make_request("http://127.0.0.1:3000/models/train/done",result)
+
+
 
 
     

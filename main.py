@@ -1,8 +1,8 @@
 from fastapi import FastAPI, File, UploadFile, Form, BackgroundTasks
 from pydantic import BaseModel
-from threading import Thread
 import predict
 import train
+import test
 
 app = FastAPI()
 
@@ -44,18 +44,39 @@ async def train_new_model(
 
 class BasedTrainRequest(BaseModel):
     patience : int = 10
+    base_model : str = "latest"
     epochs : int = 100
 
-@app.post("/train/based/{base_model}")
+@app.post("/train/based")
 async def train_based_model(
     request : BasedTrainRequest,
-    base_model = "latest",
-    background_tasks = BackgroundTasks,
+    background_tasks : BackgroundTasks,
 ):
     patience = request.patience
     epochs = request.epochs
-
-    background_tasks.add_task(train.train_based,patience, base_model,epochs)
+    base_model = request.base_model
+    # return {
+    #     "message":"training started, please wait until the training is done",
+    #     "patience" : request.patience,
+    #     "epochs" : request.epochs,
+    #     "base_model" : request.base_model,
+    # }
+    background_tasks.add_task(train.train_based, base_model,patience,epochs)
     return {
         "message":"training started, please wait until the training is done",
+    }
+
+@app.get("/test/{model}")
+async def train_based_model(
+    model:str = "temp"
+):
+    # return {
+    #     "message":"training started, please wait until the training is done",
+    #     "patience" : request.patience,
+    #     "epochs" : request.epochs,
+    #     "base_model" : request.base_model,
+    # }
+    result = test.test(model)
+    return {
+        "result" : result,
     }
