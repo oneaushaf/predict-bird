@@ -34,10 +34,12 @@ async def train_new(layers : int = 64, callback_patience : int =10,epochs=100):
         IMG_SIZE = (224, 224)
         train_data = train_datagen.flow_from_directory(train_dir,
                                                     shuffle=True,
-                                                    target_size=IMG_SIZE)
+                                                    target_size=IMG_SIZE,
+                                                    batch_size=8)
 
         val_data = val_datagen.flow_from_directory(val_dir, shuffle=False,
-                                                    target_size=IMG_SIZE)
+                                                    target_size=IMG_SIZE,
+                                                    batch_size=8)
         
         classes = list(val_data.class_indices.keys())
         
@@ -121,10 +123,12 @@ async def train_based(base_model : str="latest",callback_patience : int=10, epoc
         IMG_SIZE = (224, 224)
         train_data = train_datagen.flow_from_directory(train_dir,
                                                     shuffle=True,
-                                                    target_size=IMG_SIZE)
+                                                    target_size=IMG_SIZE,
+                                                    batch_size=8)
 
         val_data = val_datagen.flow_from_directory(val_dir, shuffle=False,
-                                                    target_size=IMG_SIZE)
+                                                    target_size=IMG_SIZE,
+                                                    batch_size=8)
         
         classes = list(train_data.class_indices.keys())
         

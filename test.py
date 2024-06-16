@@ -15,7 +15,8 @@ def test(model_name : str)->dict[str,any]:
     IMG_SIZE = (224, 224)
     test_dir = dataset_path + '/test'
     test_data = test_datagen.flow_from_directory(test_dir, shuffle=False,
-                                                    target_size=IMG_SIZE)
+                                                    target_size=IMG_SIZE,
+                                                    batch_size=8)
 
     model = load_model(model_path + '/' + model_name +'/SavedModel.h5')
     with open(model_path + '/' + model_name +'/species.json',"r") as f:

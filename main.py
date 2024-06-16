@@ -19,7 +19,7 @@ async def predict_image(
             result[0]:confidence[0],
             result[1]:confidence[1],
             result[2]:confidence[2],
-        } 
+        }
     }
 
 class NewTrainRequest(BaseModel):
