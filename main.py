@@ -44,7 +44,7 @@ async def train_new_model(
 
 class BasedTrainRequest(BaseModel):
     patience : int = 10
-    base_model : str = "latest"
+    base_model : str = "temp"
     epochs : int = 100
 
 @app.post("/train/based")

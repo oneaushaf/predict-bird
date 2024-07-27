@@ -1,4 +1,4 @@
-import tensorflow as tf
+import keras
 import numpy as np
 import json
 from io import BytesIO
@@ -19,7 +19,7 @@ async def predict(image : UploadFile, version : str = "latest") -> Tuple[list[st
     model_path = models_dir + version + '/SavedModel.h5'
 
     try:
-        model = tf.keras.models.load_model(model_path)
+        model = keras.models.load_model(model_path)
     except OSError as e:
         return "Error: Failed to load the model " + model_path, 0.0
     

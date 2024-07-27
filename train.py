@@ -11,10 +11,10 @@ import test
 
 async def train_new(layers : int = 64, callback_patience : int =10,epochs=100):
     try:
-        dataset_path = './../dataset/trained'
+        dataset_path = './../dataset/training'
         model_path = './../models'
 
-        train_dir = dataset_path + '/train'
+        train_dir = dataset_path + '/training'
         val_dir = dataset_path + '/validation'
 
         train_datagen = ImageDataGenerator(
@@ -35,11 +35,11 @@ async def train_new(layers : int = 64, callback_patience : int =10,epochs=100):
         train_data = train_datagen.flow_from_directory(train_dir,
                                                     shuffle=True,
                                                     target_size=IMG_SIZE,
-                                                    batch_size=8)
+                                                    batch_size=32)
 
         val_data = val_datagen.flow_from_directory(val_dir, shuffle=False,
                                                     target_size=IMG_SIZE,
-                                                    batch_size=8)
+                                                    batch_size=32)
         
         classes = list(val_data.class_indices.keys())
         
@@ -68,20 +68,32 @@ async def train_new(layers : int = 64, callback_patience : int =10,epochs=100):
             validation_data=val_data,
             epochs=epochs,
             callbacks=[callback_acc])
+        
+        
 
         model.save(model_path+'/temp/SavedModel.h5')
         with open(model_path+'/temp/species.json', 'w') as json_file:
             json.dump(classes, json_file)
+        history_path = model_path+'/temp/history.json'
+        with open(history_path, 'w') as json_file:
+            json.dump(history.history, json_file)
         timer = round(time.time()) - timer
         test_result = test.test('temp')
         result = {
             "success" : True,
             "base":"base",
+            "input":{
+                "base_model" : "base",
+                "callback_pattience" : callback_patience,
+                "epochs": epochs,
+                "image_count" : train_data.n,
+                "hidden_layers" : layers
+            },
             "data":{
                 "best_accuracy" : max(history.history['accuracy']),
-                "best_loss" : max(history.history['loss']),
+                "best_loss" : min(history.history['loss']),
                 "best_val_accuracy" : max(history.history['val_accuracy']),
-                "best_val_loss" : max(history.history['val_loss']),
+                "best_val_loss" : min(history.history['val_loss']),
                 "training_time" : timer,
                 "epochs":len(history.history['loss']),
                 "layers":layers,
@@ -100,10 +112,10 @@ async def train_new(layers : int = 64, callback_patience : int =10,epochs=100):
 
 async def train_based(base_model : str="latest",callback_patience : int=10, epochs : int = 100):
     try :
-        dataset_path = './../dataset/trained'
+        dataset_path = './../dataset/training'
         model_path = './../models'
 
-        train_dir = dataset_path + '/train'
+        train_dir = dataset_path + '/training'
         val_dir = dataset_path + '/validation'
 
         train_datagen = ImageDataGenerator(
@@ -124,11 +136,11 @@ async def train_based(base_model : str="latest",callback_patience : int=10, epoc
         train_data = train_datagen.flow_from_directory(train_dir,
                                                     shuffle=True,
                                                     target_size=IMG_SIZE,
-                                                    batch_size=8)
+                                                    batch_size=32)
 
         val_data = val_datagen.flow_from_directory(val_dir, shuffle=False,
                                                     target_size=IMG_SIZE,
-                                                    batch_size=8)
+                                                    batch_size=32)
         
         classes = list(train_data.class_indices.keys())
         
@@ -160,26 +172,32 @@ async def train_based(base_model : str="latest",callback_patience : int=10, epoc
             epochs=epochs,
             callbacks=[callback_acc])
 
+
         timer = round(time.time())
         model.save(model_path+'/temp/SavedModel.h5')
+        with open(model_path+'/temp/history.json', 'w') as json_file:
+            json.dump(history.history, json_file)
         with open(model_path+'/temp/species.json', 'w') as json_file:
             json.dump(classes, json_file)
         timer = round(time.time()) - timer
-        test_result = test.te
-        st('temp')
+        test_result = test.test('temp')
         result = {
             "success" : True,
-            "base":base_model,
+            "input":{
+                "base_model" : base_model,
+                "callback_pattience" : callback_patience,
+                "epochs": epochs,
+                "image_count" : train_data.n,
+            },
             "error":"",
             "data":{
                 "best_accuracy" : max(history.history['accuracy']),
-                "best_loss" : max(history.history['loss']),
+                "best_loss" : min(history.history['loss']),
                 "best_val_accuracy" : max(history.history['val_accuracy']),
-                "best_val_loss" : max(history.history['val_loss']),
+                "best_val_loss" : min(history.history['val_loss']),
                 "training_time" : timer,
                 "epochs":len(history.history['loss']),
                 "patience" : callback_patience,
-                "max_epochs":epochs,
             },
             "test":test_result
         }
